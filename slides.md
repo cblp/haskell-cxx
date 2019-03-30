@@ -8,13 +8,25 @@ title:
   <span class="subtitle haskell">Haskell</span><span class="subtitle cxx">C++</span>
 ...
 
-## Слайд 1
+##
 
-Текст 1
+<h1><div style="font-size: 2em; letter-spacing: -0.155em;">▶▶</div></h1>
+<h2 style="font-family: serif; font-style: italic;">&nbsp;<a href="https://ff.systems">ff.systems</a><h2>
 
-## Слайд 2
+## Почему Haskell?
 
-Текст 2
+- Самое простое средство достижения результата
+- Уже написана логика
+
+## Почему C++?
+
+Библиотеки:
+
+- Qt
+- SwarmDB
+
+<!-- ## Почему не писать всё на С++?
+Есть пласт логики, которую проще выразить на Хаскеле -->
 
 <!-- technical area -->
 
