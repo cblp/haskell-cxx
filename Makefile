@@ -1,6 +1,5 @@
-slides.pdf: slides.md
-	pandoc					\
-		--output=$@			\
-		--pdf-engine=xelatex		\
-		--to=beamer			\
+slides.html: slides.md
+	pandoc	--output=$@	\
+		--standalone	\
+		--to=revealjs	\
 		$^
