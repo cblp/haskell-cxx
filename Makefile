@@ -1,2 +1,6 @@
 slides.pdf: slides.md
-	pandoc -t beamer $^ -o $@
+	pandoc					\
+		--output=$@			\
+		--pdf-engine=xelatex		\
+		--to=beamer			\
+		$^
