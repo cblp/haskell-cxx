@@ -46,8 +46,23 @@ strlen = ... c_strlen ...
 ##
 
 ```haskell
+strlen = ByteString -> Int
+
+hs_strlen = Ptr CChar -> IO Int
+hs_strlen = ... strlen ...
+
 foreign export ccall
-    triple :: Int -> Int
+    hs_strlen :: Ptr CChar -> IO Int
+```
+
+```c
+int hs_strlen(const char *);
+```
+
+```c
+hs_init(&argc, &argv);
+...
+int n = hs_strlen("hello");
 ```
 
 <!-- technical area -->
