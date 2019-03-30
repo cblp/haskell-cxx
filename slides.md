@@ -27,7 +27,7 @@ title:
 
 ## Классический FFI в&nbsp;Haskell
 
-## C `>>=` Haskell
+## C `>=>` Haskell
 
 ```c
         ┌
@@ -47,7 +47,7 @@ adapt   │ strlen :: ByteString -> Int
         └
 ```
 
-## Haskell `>>=` C
+## Haskell `>=>` C
 
 ```haskell
         ┌
@@ -69,7 +69,7 @@ export  │ int hs_strlen(const char *);
         └
 ```
 
-## Haskell `>>=` C
+## Haskell `>=>` C
 
 ```c
         ┌
@@ -80,6 +80,27 @@ prepare │ hs_init(&argc, &argv);
 use     │ int n = hs_strlen("hello");
         └
 ```
+
+## _.cabal
+
+```yaml
+extra-source-files: hs_exports.h
+
+component
+    c-sources: foo.c bar/baz.c
+    cc-options: -DQUX=42
+    include-dirs: /usr/local/include
+
+    if os(linux)
+        extra-libraries: Qt5Core Qt5Gui Qt5Widgets
+        extra-lib-dirs: /opt/qt512/lib
+    if os(osx)
+        include-dirs: /usr/local/opt/qt5/include
+        extra-framework-dirs: /usr/local/opt/qt5/lib
+        frameworks: QtCore QtGui QtWidgets
+```
+
+<a href="https://haskell.org/cabal/users-guide/developing-packages.html">`haskell.org/cabal`</a>
 
 <!-- technical area -->
 
