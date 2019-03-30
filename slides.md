@@ -25,8 +25,30 @@ title:
 - Qt
 - SwarmDB
 
-<!-- ## Почему не писать всё на С++?
-Есть пласт логики, которую проще выразить на Хаскеле -->
+## Классический FFI в&nbsp;Haskell
+
+##
+
+```c
+// extern "C"
+int strlen(const char * s);
+```
+
+```haskell
+foreign import ccall
+    "strlen"
+    c_strlen :: Ptr CChar -> IO Int
+
+strlen :: ByteString -> Int
+strlen = ... c_strlen ...
+```
+
+##
+
+```haskell
+foreign export ccall
+    triple :: Int -> Int
+```
 
 <!-- technical area -->
 
