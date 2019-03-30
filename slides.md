@@ -11,7 +11,7 @@ title:
 ##
 
 <h1><div style="font-size: 2em; letter-spacing: -0.155em;">▶▶</div></h1>
-<h2 style="font-family: serif; font-style: italic;">&nbsp;<a href="https://ff.systems">ff.systems</a><h2>
+<h2><code><a href="https://ff.systems">&nbsp;ff.systems</a></code><h2>
 
 ## Почему Haskell?
 
@@ -27,47 +27,71 @@ title:
 
 ## Классический FFI в&nbsp;Haskell
 
-##
+## C `>>=` Haskell
 
 ```c
-// extern "C"
-int strlen(const char * s);
+        ┌
+define/ │ // extern "C"
+export  │ int strlen(const char * s);
+        └
 ```
 
 ```haskell
-foreign import ccall
-    "strlen"
-    c_strlen :: Ptr CChar -> IO Int
-
-strlen :: ByteString -> Int
-strlen = ... c_strlen ...
+        ┌
+import  │ foreign import ccall
+        │     "strlen"
+        │     c_strlen :: Ptr CChar -> IO Int
+        ┝
+adapt   │ strlen :: ByteString -> Int
+        │ strlen = ... c_strlen ...
+        └
 ```
 
-##
+## Haskell `>>=` C
 
 ```haskell
-strlen = ByteString -> Int
-
-hs_strlen = Ptr CChar -> IO Int
-hs_strlen = ... strlen ...
-
-foreign export ccall
-    hs_strlen :: Ptr CChar -> IO Int
+        ┌
+define  │ strlen :: ByteString -> Int
+        │ strlen = ...
+        ┝
+adapt   │ hs_strlen :: Ptr CChar -> IO Int
+        │ hs_strlen = ... strlen ...
+        ┝
+export  │ foreign export ccall
+        │     hs_strlen :: Ptr CChar -> IO Int
+        └
 ```
 
 ```c
-int hs_strlen(const char *);
+        ┌
+        │ // hs_strlen.h
+export  │ int hs_strlen(const char *);
+        └
 ```
 
+## Haskell `>>=` C
+
 ```c
-hs_init(&argc, &argv);
-...
-int n = hs_strlen("hello");
+        ┌
+import  │ #include "hs_strlen.h"
+        ┝
+prepare │ hs_init(&argc, &argv);
+        ┝
+use     │ int n = hs_strlen("hello");
+        └
 ```
 
 <!-- technical area -->
 
 <style>
+  .reveal h1,
+  .reveal h2,
+  .reveal h3,
+  .reveal h4,
+  .reveal h5,
+  .reveal h6 {
+    font-family: Helvetica, sans-serif !important;
+  }
   .title .subtitle {
     border-color: black;
     border-style: solid;
