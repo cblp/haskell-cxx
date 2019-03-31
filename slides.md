@@ -8,64 +8,64 @@ title:
   <span class="subtitle haskell">Haskell</span><span class="subtitle cxx">C++</span>
 ...
 
-###
+##
 
 <h1><div style="font-size: 2em; letter-spacing: -0.155em;">▶▶</div></h1>
 <h2><code><a href="https://ff.systems">&nbsp;ff.systems</a></code><h2>
 
-### Почему Haskell?
+## Почему Haskell?
 
 - Самое простое средство достижения результата
 - Уже написана логика
 
-### Почему C++?
+## Почему C++?
 
 Библиотеки:
 
 - Qt
 - SwarmDB
 
-### Классический FFI в&nbsp;Haskell
+## Классический FFI в&nbsp;Haskell
 
-### C `>=>` Haskell
+## C `>=>` Haskell
 
 ```c
-impl/   ║ // extern "C"
-export  ║ int strlen(const char * s) { ... }
+definition  ║ // extern "C"
+& export    ║ int strlen(const char * s) { ... }
 ```
 
 ```haskell
-import  ║ foreign import ccall
-        ║     "strlen"
-        ║     c_strlen :: Ptr CChar -> IO Int
+import      ║ foreign import ccall
+            ║     "strlen"
+            ║     c_strlen :: Ptr CChar -> IO Int
 
-adapter ║ strlen :: ByteString -> Int
-        ║ strlen = ... c_strlen ...
+adapter     ║ strlen :: ByteString -> Int
+            ║ strlen = ... c_strlen ...
 ```
 
-### Haskell `>=>` C
+## Haskell `>=>` C
 
 ```haskell
-impl    ║ strlen :: ByteString -> Int
-        ║ strlen = ...
+definition  ║ strlen :: ByteString -> Int
+            ║ strlen = ...
 
-adapter ║ hs_strlen :: Ptr CChar -> IO Int
-        ║ hs_strlen = ... strlen ...
+adapter     ║ hs_strlen :: Ptr CChar -> IO Int
+            ║ hs_strlen = ... strlen ...
 
-export  ║ foreign export ccall
-        ║     hs_strlen :: Ptr CChar -> IO Int
-        ║
-        ║ // hs_strlen.h
-        ║ int hs_strlen(const char *);
+export      ║ foreign export ccall
+            ║     hs_strlen :: Ptr CChar -> IO Int
+            ║
+            ║ // hs_strlen.h
+            ║ int hs_strlen(const char *);
 
-import  ║ #include "hs_strlen.h"
+import      ║ #include "hs_strlen.h"
 
-use     ║ int n = hs_strlen("hello");
+use         ║ int n = hs_strlen("hello");
 ```
 
-### Как&nbsp;протащить код&nbsp;на&nbsp;C в&nbsp;программу?
+## Как&nbsp;протащить код&nbsp;на&nbsp;C в&nbsp;программу?
 
-### _.cabal
+## _.cabal
 
 ```yaml
 extra-source-files: hs_exports.h
@@ -86,7 +86,7 @@ component
 
 <a href="https://haskell.org/cabal/users-guide/developing-packages.html">`haskell.org/cabal`</a>
 
-### TemplateHaskell
+## TemplateHaskell
 
 ```haskell
 addForeignSource
@@ -103,7 +103,7 @@ data ForeignSrcLang
     | RawObject
 ```
 
-### <code>inline-c&nbsp;&nbsp;&nbsp;&nbsp;<br>inline-c-cpp</code>
+## <code>inline-c&nbsp;&nbsp;&nbsp;&nbsp;<br>inline-c-cpp</code>
 
 ```haskell
 main = do
@@ -111,30 +111,60 @@ main = do
     print x
 ```
 
-###
+##
 
 ```haskell
-        ║ // TH.addForeignSource
-impl    ║ double inline_c_Main_0() { return cos(1); }
-                         │
-                         ╰───────────────────╮
-                                             │
-import  ║ foreign import ccall safe "inline_c_Main_0"
-        ║     inline_c_ffi_698958 :: IO CDouble
+            ║ // TH.addForeignSource
+definition  ║ double inline_c_Main_0() { return cos(1); }
+                            │
+                            ╰───────────────────╮
+                                                │
+import      ║ foreign import ccall safe "inline_c_Main_0"
+            ║     inline_c_ffi_698958 :: IO CDouble
+                          │
+                          ╰──────────────────────────╮
+                                                     │
+adapter     ║ inline_c_ffi_a7QR :: IO Double         │
+            ║ inline_c_ffi_a7QR = coerce <$> inline_c_ffi_698958
                       │
-                      ╰──────────────────────────╮
-                                                 │
-adapter ║ inline_c_ffi_a7QR :: IO Double         │
-        ║ inline_c_ffi_a7QR = coerce <$> inline_c_ffi_698958
-                  │
-                  ╰────────╮
-                           │
-          main = do        │
-use     ║     x <- inline_c_ffi_a7QR
-              print x
+                      ╰────────╮
+                               │
+            ║ main = do        │
+use         ║     x <- inline_c_ffi_a7QR
+            ║     print x
 ```
 
 <!-- technical area -->
+
+##
+<h1>C++</h1>
+
+## <code>C++ &nbsp; Haskell<br>╲ ╱ &nbsp; &nbsp;<br>C &nbsp; &nbsp;</code>
+
+## <code>C++ <-> Haskell<br>↕ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>DB &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</code> {transition="slide-in fade-out"}
+
+## <code>C++ <-> Haskell<br>&nbsp; &nbsp; &nbsp; &nbsp; ↕<br>&nbsp; &nbsp; &nbsp; &nbsp; DB</code> {transition="fade-in slide-out"}
+
+##
+
+```haskell
+create    ║ storagePtr <- newStablePtr storage
+            [C.block| void {
+send      ║     $(Storage * storagePtr)->foo();
+            } |]
+```
+
+```c
+send back ║ hs_bar(storagePtr);
+```
+
+```haskell
+          ║ foreign export ccall
+receive   ║     hs_bar :: StablePtr Storage -> IO ()
+            hs_bar storagePtr = do
+deref     ║     storage <- deRefStablePtr storagePtr
+                ...
+```
 
 <style>
   .reveal h1,
