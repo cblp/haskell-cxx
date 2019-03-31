@@ -134,8 +134,6 @@ use         ║     x <- inline_c_ffi_a7QR
             ║     print x
 ```
 
-<!-- technical area -->
-
 ##
 <h1>C++</h1>
 
@@ -345,6 +343,36 @@ bar = do
 
     pure status
 ```
+
+## _.cabal (дополнение)
+
+```yaml
+component
+    cxx-sources: foo.cxx bar/baz.cxx
+    cxx-options: -DQUX=42
+```
+
+## Подводные камни
+
+1. Qt требует C++11
+2. `cxx-options: -std=c++11` <br> не действует на `TH.addForeignSource`
+3. `ghc-options: -optc=-std=c++11` <br> ломает сборку С
+    - частичный хак: <br> `ghc-options: -pgmc=clang++`
+4. `-optcxx` напрашивается, но его нет
+
+##
+<!-- Пустой экран -->
+
+## <code>ghc-options: <nobr>-threaded</nobr></code>
+
+##
+
+- `ff.systems`
+- `github.com/ff-notes`
+- `t.me/ff_dev`
+- `t.me/haskellru`
+
+<!-- technical area -->
 
 <style>
   .reveal h1,
