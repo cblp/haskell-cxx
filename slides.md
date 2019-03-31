@@ -166,6 +166,22 @@ deref     ║     storage <- deRefStablePtr storagePtr
                 ...
 ```
 
+##
+
+```c
+hs_bar(void *);
+
+
+struct Storage;
+hs_bar(Storage *);
+
+
+struct StorageHandle { struct Storage * ptr; };
+hs_bar(StorageHandle);
+```
+
+## `freeStablePtr`
+
 <style>
   .reveal h1,
   .reveal h2,
