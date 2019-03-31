@@ -8,80 +8,64 @@ title:
   <span class="subtitle haskell">Haskell</span><span class="subtitle cxx">C++</span>
 ...
 
-##
+###
 
 <h1><div style="font-size: 2em; letter-spacing: -0.155em;">▶▶</div></h1>
 <h2><code><a href="https://ff.systems">&nbsp;ff.systems</a></code><h2>
 
-## Почему Haskell?
+### Почему Haskell?
 
 - Самое простое средство достижения результата
 - Уже написана логика
 
-## Почему C++?
+### Почему C++?
 
 Библиотеки:
 
 - Qt
 - SwarmDB
 
-## Классический FFI в&nbsp;Haskell
+### Классический FFI в&nbsp;Haskell
 
-## C `>=>` Haskell
+### C `>=>` Haskell
 
 ```c
-        ┌
-define/ │ // extern "C"
-export  │ int strlen(const char * s);
-        └
+impl/   ║ // extern "C"
+export  ║ int strlen(const char * s) { ... }
 ```
 
 ```haskell
-        ┌
-import  │ foreign import ccall
-        │     "strlen"
-        │     c_strlen :: Ptr CChar -> IO Int
-        ┝
-adapt   │ strlen :: ByteString -> Int
-        │ strlen = ... c_strlen ...
-        └
+import  ║ foreign import ccall
+        ║     "strlen"
+        ║     c_strlen :: Ptr CChar -> IO Int
+
+adapter ║ strlen :: ByteString -> Int
+        ║ strlen = ... c_strlen ...
 ```
 
-## Haskell `>=>` C
+### Haskell `>=>` C
 
 ```haskell
-        ┌
-define  │ strlen :: ByteString -> Int
-        │ strlen = ...
-        ┝
-adapt   │ hs_strlen :: Ptr CChar -> IO Int
-        │ hs_strlen = ... strlen ...
-        ┝
-export  │ foreign export ccall
-        │     hs_strlen :: Ptr CChar -> IO Int
-        └
+impl    ║ strlen :: ByteString -> Int
+        ║ strlen = ...
+
+adapter ║ hs_strlen :: Ptr CChar -> IO Int
+        ║ hs_strlen = ... strlen ...
+
+export  ║ foreign export ccall
+        ║     hs_strlen :: Ptr CChar -> IO Int
+        ║
+        ║ // hs_strlen.h
+        ║ int hs_strlen(const char *);
+
+import  ║ #include "hs_strlen.h"
+
+use     ║ int n = hs_strlen("hello");
 ```
 
-```c
-        ┌
-        │ // hs_strlen.h
-export  │ int hs_strlen(const char *);
-        └
-```
+### Как&nbsp;протащить код&nbsp;на&nbsp;C в&nbsp;программу?
 
-## Haskell `>=>` C
-
-```c
-        ┌
-import  │ #include "hs_strlen.h"
-        ┝
-prepare │ hs_init(&argc, &argv);
-        ┝
-use     │ int n = hs_strlen("hello");
-        └
-```
-
-## _.cabal
+### _.cabal
 
 ```yaml
 extra-source-files: hs_exports.h
@@ -102,6 +86,54 @@ component
 
 <a href="https://haskell.org/cabal/users-guide/developing-packages.html">`haskell.org/cabal`</a>
 
+### TemplateHaskell
+
+```haskell
+addForeignSource
+    :: ForeignSrcLang -> String -> Q ()
+
+addForeignFilePath
+    :: ForeignSrcLang -> FilePath -> Q ()
+
+data ForeignSrcLang
+    = LangC
+    | LangCxx
+    | LangObjc
+    | LangObjcxx
+    | RawObject
+```
+
+### <code>inline-c&nbsp;&nbsp;&nbsp;&nbsp;<br>inline-c-cpp</code>
+
+```haskell
+main = do
+    x <- [C.exp| double { cos(1) } |]
+    print x
+```
+
+###
+
+```haskell
+        ║ // TH.addForeignSource
+impl    ║ double inline_c_Main_0() { return cos(1); }
+                         │
+                         ╰───────────────────╮
+                                             │
+import  ║ foreign import ccall safe "inline_c_Main_0"
+        ║     inline_c_ffi_698958 :: IO CDouble
+                      │
+                      ╰──────────────────────────╮
+                                                 │
+adapter ║ inline_c_ffi_a7QR :: IO Double         │
+        ║ inline_c_ffi_a7QR = coerce <$> inline_c_ffi_698958
+                  │
+                  ╰────────╮
+                           │
+          main = do        │
+use     ║     x <- inline_c_ffi_a7QR
+              print x
+```
+
 <!-- technical area -->
 
 <style>
@@ -111,7 +143,13 @@ component
   .reveal h4,
   .reveal h5,
   .reveal h6 {
-    font-family: Helvetica, sans-serif !important;
+    font-family: Helvetica, sans-serif;
+  }
+  .reveal pre {
+    box-shadow: none;
+  }
+  .reveal pre code {
+    max-height: none;
   }
   .title .subtitle {
     border-color: black;

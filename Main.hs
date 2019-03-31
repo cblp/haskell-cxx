@@ -1,3 +1,5 @@
+{-# OPTIONS -ddump-splices #-}
+
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -25,8 +27,12 @@ Cpp.context
 Cpp.include "foo.hxx" <* addDependentFile "foo.hxx"
 Cpp.include "<cstdlib>"
 
+Cpp.include "<cmath>"
+
 main :: IO ()
 main = do
+    x <- [Cpp.exp| double { cos(1) } |]
+    print x
     runTest
     checkResults
 
