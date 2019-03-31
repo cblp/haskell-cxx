@@ -203,8 +203,8 @@ Haskell ║ newtype Storage = Storage (ForeignPtr (Proxy Storage))
 ```haskell
 newtype Storage = Storage (ForeignPtr (Proxy Storage))
 
-newForeign :: IO (ForeignPtr (Proxy Storage))
-newForeign = mask_ $ do
+newForeignStorage :: IO (ForeignPtr (Proxy Storage))
+newForeignStorage = mask_ $ do
     p <- [Cpp.exp| Storage * { new Storage } |]
     newForeignPtr deleteStorage p
 
@@ -256,6 +256,94 @@ $(Cpp.context
 $(Cpp.include "<mylib/storage.hpp>")
 
 $(Cpp.verbatim "typedef mylib::Storage Storage;")
+```
+
+## Complex binding
+
+```c++
+struct UUID { uint64_t x, y; };
+
+struct Status { UUID code; std::string message; };
+
+Status bar();
+```
+
+```haskell
+data UUID = UUID Word64 Word64
+
+data Status = Status { code :: UUID, message :: ByteString }
+
+bar :: IO Status
+bar = ?
+```
+
+## Complex binding
+
+```haskell
+struct UUID {               ║   data UUID =
+    uint64_t x, y;          ║       UUID Word64 Word64
+};                          ║
+
+struct Status {             ║   data Status = Status {
+    UUID        code;       ║       code    :: UUID,
+    std::string message;    ║       message :: ByteString
+};                          ║   }
+
+Status bar();               ║   bar :: IO Status
+                            ║   bar = ?
+```
+
+##
+
+```haskell
+decode :: Ptr (Proxy Status) -> IO Status
+decode statusPtr = allocaArray 4 $ \arena -> do
+    [Cpp.block| void {
+        uint64_t * const arena = $(uint64_t * arena);
+        uint64_t & x   = arena[0];
+        uint64_t & y   = arena[1];
+        uint64_t & ptr = arena[2];
+        uint64_t & len = arena[3];
+        Status & status = * $(Status * statusPtr);
+        x   = uint64_t(status.code().value());
+        y   = uint64_t(status.code().origin());
+        ptr = uintptr_t(status.comment().data());
+        len = status.comment().length();
+    } |]
+    ...
+```
+
+##
+
+```haskell
+    ...
+    x   <- peekElemOff arena 0
+    y   <- peekElemOff arena 1
+    ptr <- peekElemOff arena 2
+    len <- peekElemOff arena 3
+    comment <-
+        BS.packCStringLen
+            (wordPtrToPtr $ fromIntegral ptr, fromIntegral len)
+    pure Status{code = UUID x y, comment}
+```
+
+##
+
+```haskell
+bar :: IO Status
+bar = do
+
+    statusPtr <- [Cpp.exp| Status * { new Status } |]
+
+    [Cpp.block| void {
+        * $fptr-ptr:(Status * statusPtr) = bar();
+    } |]
+
+    status <- decode statusPtr
+
+    [Cpp.block| void { delete $(Status * statusPtr); } |]
+
+    pure status
 ```
 
 <style>
