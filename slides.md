@@ -180,7 +180,83 @@ struct StorageHandle { struct Storage * ptr; };
 hs_bar(StorageHandle);
 ```
 
-## `freeStablePtr`
+## `StablePtr`
+
+1. Не перемещается в памяти
+2. Не собирается как мусор
+3. `freeStablePtr`
+
+## `ForeignPtr`
+
+```haskell
+C++     ║ class Storage {
+        ║ public:
+        ║     Storage();
+        ║     ~Storage();
+        ║ };
+
+Haskell ║ newtype Storage = Storage (ForeignPtr (Proxy Storage))
+```
+
+## C++ class binding
+
+```haskell
+newtype Storage = Storage (ForeignPtr (Proxy Storage))
+
+newForeign :: IO (ForeignPtr (Proxy Storage))
+newForeign = mask_ $ do
+    p <- [Cpp.exp| Storage * { new Storage } |]
+    newForeignPtr deleteStorage p
+
+foreign import ccall "&deleteStorage"
+    deleteStorage :: FinalizerPtr a
+```
+
+```c++
+extern "C"
+void deleteStorage(Storage * p) {
+    delete p;
+}
+```
+
+## C++ method binding
+
+```c++
+class Storage {
+public:
+    int foo(std::string name);
+};
+```
+
+```haskell
+newtype Storage = Storage (ForeignPtr (Proxy Storage))
+
+foo :: Storage -> ByteString -> IO Int
+foo (Storage storage) name =
+    [Cpp.exp| int {
+        $fptr-ptr:(Storage * storage)
+            ->foo($bs-cstr:name)
+    } |]
+```
+
+##
+
+```haskell
+$(Cpp.context
+    $   Cpp.cppCtx
+    <>  Cpp.bsCtx
+    <>  Cpp.fptrCtx
+    <>  mempty
+        { ctxTypesTable =
+            Map.singleton
+                (TypeName "Storage")
+                [t| Proxy Storage |]
+        })
+
+$(Cpp.include "<mylib/storage.hpp>")
+
+$(Cpp.verbatim "typedef mylib::Storage Storage;")
+```
 
 <style>
   .reveal h1,
